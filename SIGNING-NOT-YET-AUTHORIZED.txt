@@ -1,0 +1,4 @@
+﻿.github/workflows/p0d3-sign.yml is deliberately NOT INSTALLED.
+Cosign/Sigstore signing would require CI installer and publicly logged workflow identity.
+An explicit isolated reviewer approval and authorization to run hosted CI are pending.
+No trust root is created by this staging repository alone.
