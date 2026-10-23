@@ -1,0 +1,39 @@
+# Staged for independent review. Never executes on push or pull_request.
+name: P0D3 - Attest reviewed metadata (manual only)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+jobs:
+  attest-reviewed-metadata:
+    if: github.repository == 'kurokof0/udcc-p0d3-provenance' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout pinned reviewed commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Verify exact subject SHA256 and reject authorization
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' '4fec50b85a87702d5fc58c93911028835cd83e1d4ab4f808374628bfd548da66' 'P0D3-RELEASE-EVIDENCE.json' | sha256sum --check --status
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path("P0D3-RELEASE-EVIDENCE.json").read_text(encoding="utf-8"))
+          assert data["schema"] == "p0d3.trust-subject.v1"
+          assert data["source_rc_sha256"] == "49b8052f3d6d35537bc9698e7d0a118d86dddbd15ae661c8c4a524e14cba5e88"
+          assert len(data["files"]) == 10
+          assert data["deployment_authorized"] is False
+          assert data["task_execution_authorized"] is False
+          assert data["live_pass"] is False
+          PY
+      - name: Issue GitHub OIDC Sigstore attestation for metadata only
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-path: P0D3-RELEASE-EVIDENCE.json
