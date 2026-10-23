@@ -1,18 +1,17 @@
-# P0D3 — Independent Review Gate (not yet approved)
+# P0D3 — Owner-authorized technical review and explicit exception
 
-This pull request proposes a **manual-only** GitHub Actions workflow to create an OIDC/Sigstore attestation for the *metadata subject*, not for deployable binaries or operational code.
+**Scope:** PR #1: manual-only metadata GitHub OIDC/Sigstore attestation.
 
-Reviewed subject SHA256: `4fec50b85a87702d5fc58c93911028835cd83e1d4ab4f808374628bfd548da66`.
+**Decision 2026-10-23:** The owner explicitly waives separate-human GitHub approvals for this repository's merge and authorizes owner-delegated technical review. This is NOT an independent security review or independent release approval.
 
-## Mandatory before merging or manually running
+## Technical checks
+- The attestation workflow triggers only on manual workflow_dispatch, and runs on main in kurokof0/udcc-p0d3-provenance.
+- Reviewed SHA256 subject: 4fec50b85a87702d5fc58c93911028835cd83e1d4ab4f808374628bfd548da66.
+- Subject asserts deployment_authorized=false, task_execution_authorized=false and live_pass=false.
+- Exact GitHub Actions commits are pinned. No Hermes/SARD source, OAuth, PHI, production tasks or live deployments are changed.
 
-- A reviewer **other than** `kurokof0` must inspect this PR and approve under the protected `main` branch rule.
-- Reviewer must verify the action SHA pins, subject digest, permissions, absence of secrets, and no production code/PHI.
-- Commit changes must stay under an approved pull request; no direct pushes to `main`.
-- Manual workflow run requires a separately reviewed decision; never treat the result as authorization to deploy.
-- Verify the actual GitHub attestation via `gh attestation verify P0D3-RELEASE-EVIDENCE.json --repo kurokof0/udcc-p0d3-provenance --signer-workflow .github/workflows/p0d3-attest.yml`.
-- Private keys, OAuth tokens, SARD repositories, release Gate, Hermes Bridge and Windows Scheduled Tasks are all out of scope.
-- The signing service authenticates the *workflow identity*; it is not an independent review of the P0D3 runtime or a live login/snapshot proof.
-- The repository owner can still change protection settings, so a technically independent human authority or organization policy is not fully established merely by GitHub branch protection.
-
-**Current decision:** signing not performed; independent reviewer not assigned; P0D3 deployment/jobs remain **NO-GO**.
+## Safeguards retained
+- Branch must use pull requests, enforce admins, linear history, conversation resolution, no force-push and no deletion.
+- Owner explicitly allows required approvals = 0 for this repository: NO independent reviewer was obtained.
+- Merge does NOT authorize triggering GitHub workflow, operating live observers or dispatching any jobs.
+- F01/F02/F03 P0D3 live trust findings remain OPEN. Crypto signature of an owner-controlled workflow is not independent authorization.
